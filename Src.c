@@ -1,8 +1,8 @@
 #include <windows.h>
 
-void main() 
+void NONCURRENTmain() 
 {
-	 MessageBox(
+	 MessageBoxW(
 		NULL,
 		L"Your device will cease all operations immediately",
 		L"Error",
